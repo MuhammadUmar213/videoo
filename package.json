@@ -1,0 +1,25 @@
+{
+  "name": "downloadanyvideo",
+  "version": "1.0.0",
+  "description": "Original AdSense-friendly video downloader platform",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "build": "npm run build --workspaces",
+    "start": "npm start --workspaces"
+  },
+  "keywords": [
+    "video-downloader",
+    "youtube",
+    "instagram",
+    "facebook",
+    "tiktok"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

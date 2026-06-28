@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply box-border;
+}
+
+body {
+  @apply bg-white text-gray-900 font-sans;
+  font-family: "Inter", "Poppins", sans-serif;
+}
+
+/* Gradient Backgrounds */
+.gradient-primary {
+  @apply bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 bg-clip-text text-transparent;
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(123, 47, 255, 0.7);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 bg-gray-200 text-gray-900 font-bold rounded-lg hover:bg-gray-300 transition-all;
+}
+
+/* Card Styles */
+.card {
+  @apply bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6;
+}
+
+/* Input Styles */
+.input-primary {
+  @apply w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300;
+}
+
+.input-primary::placeholder {
+  @apply text-gray-400;
+}

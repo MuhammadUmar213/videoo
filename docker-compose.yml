@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: downloadanyvideo-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: downloadanyvideo
+
+  backend:
+    build: ./backend
+    container_name: downloadanyvideo-backend
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/downloadanyvideo
+      NODE_ENV: development
+      FRONTEND_URL: http://localhost:3000
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app/backend
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    container_name: downloadanyvideo-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app/frontend
+    command: npm run dev
+
+volumes:
+  mongo-data:
+
+networks:
+  default:
+    name: downloadanyvideo-network
