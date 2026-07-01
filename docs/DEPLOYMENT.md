@@ -157,7 +157,7 @@ pm2 log
 pm2 monit
 ```
 
-## 📊 MongoDB Setup
+## MongoDB Setup
 
 ### Local MongoDB
 
@@ -169,7 +169,15 @@ sudo systemctl enable mongodb
 ### MongoDB Atlas (Cloud)
 
 1. Create cluster at mongodb.com/cloud
-2. Add connection string to `.env`
+2. Create a database user and allow your server IP address
+3. Add the remote connection string to `.env`
+
+```env
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster0.example.mongodb.net/downloadanyvideo?retryWrites=true&w=majority
+MONGODB_DB_NAME=downloadanyvideo
+MONGODB_MAX_POOL_SIZE=10
+```
 
 ## 🔄 CI/CD (GitHub Actions)
 

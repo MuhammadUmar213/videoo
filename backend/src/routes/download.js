@@ -1,8 +1,8 @@
 import express from "express";
+import Download from "../models/Download.js";
 
 const router = express.Router();
 
-// Mock endpoint - returns video info
 router.post("/fetch-info", async (req, res) => {
   try {
     const { url } = req.body;
@@ -11,7 +11,6 @@ router.post("/fetch-info", async (req, res) => {
       return res.status(400).json({ error: "URL is required" });
     }
 
-    // Mock response - replace with yt-dlp integration later
     const mockInfo = {
       id: "mock_" + Date.now(),
       title: "Sample Video Title",
@@ -23,7 +22,7 @@ router.post("/fetch-info", async (req, res) => {
         { quality: "720p", format: "mp4" },
         { quality: "audio", format: "mp3" },
       ],
-      platform: "youtube",
+      platform: getPlatformFromUrl(url),
     };
 
     res.json(mockInfo);
@@ -32,7 +31,6 @@ router.post("/fetch-info", async (req, res) => {
   }
 });
 
-// Download endpoint
 router.post("/download", async (req, res) => {
   try {
     const { url, format, quality } = req.body;
@@ -43,22 +41,19 @@ router.post("/download", async (req, res) => {
         .json({ error: "URL, format, and quality are required" });
     }
 
-    // Log download (for analytics)
-    logDownload(url, format, quality, req.ip);
+    await logDownload(url, format, quality, req.ip);
 
-    // Mock response - replace with actual yt-dlp streaming
     res.json({
       message: "Download started",
-      url: url,
-      format: format,
-      quality: quality,
+      url,
+      format,
+      quality,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get supported sites
 router.get("/supported-sites", (req, res) => {
   const sites = [
     "youtube.com",
@@ -75,26 +70,31 @@ router.get("/supported-sites", (req, res) => {
   res.json({ supported_sites: sites, total: sites.length });
 });
 
-// Helper function - log downloads
-const logDownload = (url, format, quality, ip) => {
-  const logEntry = {
-    timestamp: new Date(),
+const getPlatformFromUrl = (url) => {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    return host.split(".").slice(-2).join(".");
+  } catch {
+    return "unknown";
+  }
+};
+
+const logDownload = async (url, format, quality, ip) => {
+  await Download.create({
     url_hash: hashString(url),
     format,
     quality,
     ip_hash: hashString(ip),
-  };
-  // In production, save to MongoDB
-  console.log("📥 Download logged:", logEntry);
+    platform: getPlatformFromUrl(url),
+  });
 };
 
-// Simple hash function
-const hashString = (str) => {
+const hashString = (str = "") => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
   return Math.abs(hash).toString(16);
 };

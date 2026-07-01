@@ -96,7 +96,7 @@ export default function Footer() {
         <div className="border-t border-gray-300 pt-8 text-center text-sm text-gray-600">
           <p>&copy; {currentYear} DownloadAnyVideo. All rights reserved.</p>
           <p className="mt-2">
-            ⚠️ Only download videos you have permission to download. Respect
+            Only download videos you have permission to download. Respect
             copyright laws.
           </p>
         </div>
