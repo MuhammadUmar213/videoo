@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="font-bold text-lg mb-4 gradient-text">
-              DownloadAnyVideo
+              VideoDownloadingplace
             </h3>
             <p className="text-gray-600 text-sm">
               Download videos from 50+ platforms in multiple formats and
