@@ -1,158 +1,72 @@
+import SEO from "../components/SEO";
+import { site } from "../data/site";
+
 export default function Privacy() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold mb-4 gradient-text">Privacy Policy</h1>
-      <p className="text-gray-600 mb-8">Last updated: June 6, 2026</p>
+    <div className="mx-auto max-w-4xl px-4 py-16">
+      <SEO
+        title="Privacy Policy | VidSavio"
+        description="VidSavio privacy policy covering logs, analytics, cookies, and rights holder contact details."
+        path="/privacy-policy"
+      />
+      <h1 className="mb-4 text-4xl font-bold text-slate-950">Privacy Policy</h1>
+      <p className="mb-8 text-slate-600">Last updated: July 17, 2026</p>
 
-      <div className="space-y-6 text-gray-700">
+      <div className="space-y-6 text-slate-700">
         <section className="card">
-          <h2 className="text-2xl font-bold mb-4">1. Overview</h2>
+          <h2 className="mb-4 text-2xl font-bold">1. Overview</h2>
           <p>
-            DownloadAnyVideo ("we," "us," or "our") operates as a free online
-            video downloader service. This Privacy Policy explains how we
-            collect, use, disclose, and safeguard your information.
+            {site.name} operates a video format checking and downloader flow for
+            permitted offline viewing. This policy explains what information we
+            collect and how we use it.
           </p>
         </section>
 
         <section className="card">
-          <h2 className="text-2xl font-bold mb-4">2. Information We Collect</h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-bold mb-2">
-                📊 Automatically Collected Information:
-              </h3>
-              <ul className="list-disc list-inside space-y-2">
-                <li>
-                  <strong>Browser Data:</strong> IP address (hashed), browser
-                  type, pages visited
-                </li>
-                <li>
-                  <strong>Download Logs:</strong> URL hash, format, quality,
-                  timestamp
-                </li>
-                <li>
-                  <strong>Cookies:</strong> Session cookies for functionality
-                </li>
-                <li>
-                  <strong>Analytics:</strong> Google Analytics 4 tracking
-                  (anonymized)
-                </li>
-              </ul>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm">
-                <strong>✅ What We DON'T Collect:</strong> Credit cards,
-                passwords, or unnecessary data
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="card">
-          <h2 className="text-2xl font-bold mb-4">3. How We Use Your Data</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>✅ Improve service quality and reliability</li>
-            <li>✅ Track popular platforms and trends</li>
-            <li>✅ Prevent abuse via rate limiting</li>
-            <li>✅ Display public analytics</li>
-            <li>✅ Respond to your inquiries</li>
-            <li>✅ Comply with legal obligations</li>
+          <h2 className="mb-4 text-2xl font-bold">2. Information We Collect</h2>
+          <ul className="list-inside list-disc space-y-2">
+            <li>Browser and device data for security and diagnostics</li>
+            <li>Hashed or limited request data for rate limiting and abuse prevention</li>
+            <li>Contact form details when you choose to send a message</li>
+            <li>Aggregate analytics if analytics tools are enabled</li>
           </ul>
         </section>
 
         <section className="card">
-          <h2 className="text-2xl font-bold mb-4">
-            4. Data Storage & Security
-          </h2>
-          <div className="space-y-3">
-            <p>
-              <strong>Browser Storage:</strong> Download history stored locally
-              in your browser
-            </p>
-            <p>
-              <strong>Server Storage:</strong> Analytics data in MongoDB with
-              security
-            </p>
-            <p>
-              <strong>Retention:</strong> Download logs kept 90 days, then
-              deleted
-            </p>
-            <p>
-              <strong>Encryption:</strong> HTTPS/SSL for all data in transit
-            </p>
-          </div>
-        </section>
-
-        <section className="card">
-          <h2 className="text-2xl font-bold mb-4">5. Cookies & Tracking</h2>
-          <div className="space-y-3">
-            <p>
-              <strong>Session Cookies:</strong> For functionality (required)
-            </p>
-            <p>
-              <strong>Analytics:</strong> Google Analytics 4 (optional)
-            </p>
-            <p className="text-sm text-gray-600">
-              You can disable cookies in browser settings
-            </p>
-          </div>
-        </section>
-
-        <section className="card">
-          <h2 className="text-2xl font-bold mb-4">6. Third-Party Services</h2>
-          <ul className="space-y-2">
-            <li>📊 Google Analytics - Traffic analysis</li>
-            <li>🎯 Google AdSense - Advertisements</li>
-            <li>💾 MongoDB - Database hosting</li>
-            <li>☁️ Cloud Platforms - Deployment</li>
+          <h2 className="mb-4 text-2xl font-bold">3. How We Use Data</h2>
+          <ul className="list-inside list-disc space-y-2">
+            <li>Operate and improve the service</li>
+            <li>Prevent abuse, spam, and excessive automated requests</li>
+            <li>Respond to support and DMCA inquiries</li>
+            <li>Comply with legal obligations</li>
           </ul>
         </section>
 
         <section className="card">
-          <h2 className="text-2xl font-bold mb-4">7. Your Rights</h2>
-          <div className="space-y-3">
-            <p>
-              <strong>🔍 Right to Know:</strong> What data we collect
-            </p>
-            <p>
-              <strong>🗑️ Right to Delete:</strong> Request data deletion
-            </p>
-            <p>
-              <strong>📋 Right to Access:</strong> Get a copy of your data
-            </p>
-            <p className="text-sm text-gray-600">
-              Contact: privacy@downloadanyvideo.com
-            </p>
-          </div>
-        </section>
-
-        <section className="card">
-          <h2 className="text-2xl font-bold mb-4">8. Children's Privacy</h2>
+          <h2 className="mb-4 text-2xl font-bold">4. Cookies and Ads</h2>
           <p>
-            DownloadAnyVideo is not for children under 13. We don't knowingly
-            collect data from children.
+            Essential cookies may support site functionality. Analytics and ad
+            cookies may be used if those services are enabled. See the{" "}
+            <a className="text-fuchsia-600" href="/cookie-policy">
+              Cookie Policy
+            </a>{" "}
+            for more detail.
           </p>
         </section>
 
         <section className="card">
-          <h2 className="text-2xl font-bold mb-4">9. Contact Information</h2>
-          <div className="space-y-2">
-            <p>
-              <strong>📧 Email:</strong> privacy@downloadanyvideo.com
-            </p>
-            <p>
-              <strong>💬 Form:</strong>{" "}
-              <a
-                href="/contact"
-                className="text-blue-500 hover:text-purple-600"
-              >
-                Contact Us
-              </a>
-            </p>
-            <p>
-              <strong>⚖️ DMCA:</strong> dmca@downloadanyvideo.com
-            </p>
-          </div>
+          <h2 className="mb-4 text-2xl font-bold">5. Contact</h2>
+          <p>
+            Privacy questions can be sent to{" "}
+            <a className="text-fuchsia-600" href={`mailto:${site.supportEmail}`}>
+              {site.supportEmail}
+            </a>
+            . Copyright notices should be sent to{" "}
+            <a className="text-fuchsia-600" href={`mailto:${site.dmcaEmail}`}>
+              {site.dmcaEmail}
+            </a>
+            .
+          </p>
         </section>
       </div>
     </div>

@@ -1,166 +1,208 @@
 import { useState } from "react";
+import SEO from "../components/SEO";
 import { AdBanner, AdResponsive } from "../components/AdPlaceholder";
+import { blogPosts, platforms, site } from "../data/site";
+
+const trustItems = [
+  "No login required",
+  "No watermark added",
+  "Public links only",
+  "Clear format options",
+];
 
 export default function Home() {
   const [url, setUrl] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
-  const platforms = [
-    "YouTube",
-    "Instagram",
-    "Facebook",
-    "TikTok",
-    "Twitter/X",
-    "Vimeo",
-    "Snapchat",
-    "Pinterest",
-  ];
-
-  const features = [
-    {
-      title: "Fast Processing",
-      desc: "Fetch video details quickly with a clean download flow.",
-      icon: "01",
-    },
-    {
-      title: "Mobile Ready",
-      desc: "Built for visitors coming from search, social, and mobile browsers.",
-      icon: "02",
-    },
-    {
-      title: "Multi Format",
-      desc: "Prepare MP4, MP3, WEBM, and quality options from one place.",
-      icon: "03",
-    },
-    {
-      title: "Business Friendly",
-      desc: "Ad zones and analytics are placed for future AdSense growth.",
-      icon: "04",
-    },
-  ];
-
-  const highlights = ["50+ Sites", "No Signup", "AdSense Ready"];
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setUrl(text);
+    } catch {
+      setUrl((current) => current);
+    }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!agreed) return;
     const query = url ? `?url=${encodeURIComponent(url)}` : "";
     window.location.href = `/download${query}`;
   };
 
   return (
-    <div className="overflow-hidden">
-      <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+    <div className="overflow-hidden bg-white">
+      <SEO
+        title="VidSavio - Video Downloader for Permitted Offline Viewing"
+        description="Save videos you own, have permission to download, or that are Creative Commons or public domain from YouTube, Instagram, TikTok, and Facebook."
+        path="/"
+      />
+
+      <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-fuchsia-50 px-4 py-3">
         <div className="mx-auto max-w-6xl">
           <AdBanner />
         </div>
       </div>
 
-      <section className="relative overflow-hidden px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,180,255,0.13),_transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(255,45,120,0.11),_transparent_34%)]" />
-        <div className="absolute left-1/2 top-10 h-56 w-56 -translate-x-1/2 rounded-full bg-blue-400/10 blur-3xl" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="animate-slide-up">
-            <p className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur">
-              Free video downloader for 50+ platforms
-            </p>
-            <h1 className="mt-6 text-4xl font-black leading-tight sm:text-5xl lg:text-6xl gradient-text">
-              Download Any Video
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg text-slate-600 sm:text-xl">
-              Download videos from YouTube, Instagram, Facebook, TikTok, and 50+
-              platforms with a clean, fast, mobile-friendly experience.
-            </p>
+      <section className="hero-gradient relative px-4 py-12 sm:px-6 lg:px-8 lg:py-24">
+        <div className="mx-auto max-w-5xl text-center">
+          <div className="mx-auto mb-5 flex w-fit flex-wrap justify-center gap-2 rounded-full border border-white/30 bg-white/10 backdrop-blur-md p-1 shadow-lg">
+            {platforms.slice(0, 5).map((platform) => (
+              <a
+                key={platform.path}
+                href={platform.path}
+                className="rounded-full px-4 py-2 text-sm font-bold text-white hover:bg-white/20 transition"
+              >
+                {platform.name}
+              </a>
+            ))}
+          </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="card pulse-glow mt-8 rounded-2xl border-slate-200 p-5 shadow-xl shadow-blue-500/10"
-            >
-              <div className="flex flex-col gap-3 sm:flex-row">
+          <p className="text-sm font-bold uppercase tracking-wide text-violet-200">
+            Fast, clean, permission-first downloader
+          </p>
+          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+            Download videos you are allowed to save
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-violet-100">
+            {site.name} gives you a simple paste-and-download flow for public
+            videos you own, have permission to save, or that are lawfully
+            available for offline viewing.
+          </p>
+          <div className="mx-auto mt-6 flex max-w-2xl flex-wrap justify-center gap-3 text-sm font-semibold text-white">
+            <span className="rounded-full border border-white/30 bg-white/10 backdrop-blur px-3 py-2">
+              No login required
+            </span>
+            <span className="rounded-full border border-white/30 bg-white/10 backdrop-blur px-3 py-2">
+              Permission-first workflow
+            </span>
+            <span className="rounded-full border border-white/30 bg-white/10 backdrop-blur px-3 py-2">
+              Transparent legal pages
+            </span>
+          </div>
+
+          <form onSubmit={handleSubmit} className="download-panel mx-auto mt-8">
+            <div className="flex flex-col gap-3 lg:flex-row">
+              <div className="flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-white/30 bg-white/95 backdrop-blur p-2 shadow-lg sm:flex-row">
                 <input
                   type="url"
                   value={url}
                   onChange={(event) => setUrl(event.target.value)}
-                  placeholder="Paste video URL here..."
-                  className="input-primary sm:flex-1"
+                  placeholder="Paste video URL here"
+                  className="min-h-[52px] flex-1 rounded-md border-0 px-4 text-base font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
                 />
-                <button type="submit" className="btn-primary w-full sm:w-auto">
-                  Download Now
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {highlights.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-slate-100 bg-white/80 px-3 py-4 text-center shadow-sm"
-                >
-                  <p className="text-sm font-bold text-slate-900">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="hero-visual relative rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-2xl shadow-slate-200/70 backdrop-blur">
-            <div className="relative flex aspect-video flex-col justify-between overflow-hidden rounded-[1.4rem] bg-slate-950 p-4 text-white">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.2),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.25),_transparent_40%)] opacity-70" />
-              <div className="relative flex h-full flex-col justify-between">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span>Preview</span>
-                  <span>MP4 - 1080p</span>
-                </div>
-                <div>
-                  <div className="mb-3 h-3 w-3/4 rounded bg-white/80" />
-                  <div className="h-2 w-1/2 rounded bg-white/40" />
-                </div>
-                <div className="h-2 rounded bg-white/20">
-                  <div className="h-2 w-2/3 rounded gradient-primary" />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={pasteFromClipboard}
+                    className="utility-btn"
+                  >
+                    Paste
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUrl("")}
+                    className="utility-btn"
+                  >
+                    Clear
+                  </button>
                 </div>
               </div>
+              <button type="submit" className="download-btn" disabled={!agreed}>
+                Download
+              </button>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {["MP4", "MP3", "WEBM"].map((format) => (
-                <div
-                  key={format}
-                  className="rounded-2xl bg-slate-50 p-3 text-center font-bold text-slate-800"
-                >
-                  {format}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="bg-slate-50 px-4 py-14">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-10 text-center text-3xl font-bold text-slate-900">
-            Supported Platforms
-          </h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {platforms.map((platform) => (
-              <div key={platform} className="card text-center">
-                <p className="font-bold text-slate-900">{platform}</p>
+            <label className="mt-4 flex gap-3 text-left text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(event) => setAgreed(event.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-fuchsia-600 focus:ring-fuchsia-500"
+              />
+              <span>
+                I confirm I own this content or have permission from the
+                copyright holder to download it.
+              </span>
+            </label>
+          </form>
+
+          <div className="mx-auto mt-6 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {trustItems.map((item) => (
+              <div key={item} className="trust-chip">
+                <span className="trust-dot" />
+                {item}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-4 py-16">
+      <section className="px-4 py-14">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-slate-900">
-            Why Choose Us?
-          </h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature) => (
-              <div key={feature.title} className="card">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl gradient-primary text-sm font-bold text-white">
-                  {feature.icon}
-                </div>
-                <h3 className="mb-2 text-xl font-bold text-slate-900">
-                  {feature.title}
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-black text-slate-950">Key Features</h2>
+            <p className="mt-3 text-slate-600">
+              Built for the fast, no-confusion downloader experience users
+              expect.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-4">
+            {[
+              [
+                "Fast",
+                "Fast loading pages and a streamlined single-action flow",
+              ],
+              ["Clean", "No misleading duplicate buttons or forced redirects"],
+              ["Private", "No account required for the basic downloader flow"],
+              [
+                "Ready",
+                "MP4, audio, and quality choices for permitted offline viewing",
+              ],
+            ].map(([title, text]) => (
+              <div key={title} className="feature-card">
+                <div className="feature-icon">{title.slice(0, 2)}</div>
+                <h3 className="mt-4 text-xl font-black text-slate-950">
+                  {title}
                 </h3>
-                <p className="text-slate-600">{feature.desc}</p>
+                <p className="mt-2 text-sm text-slate-600">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 px-4 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-black text-slate-950">How It Works</h2>
+            <p className="mt-3 text-slate-600">
+              Three simple steps, with permission checked before the format
+              request.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              [
+                "01",
+                "Copy the URL",
+                "Copy a public video link from the platform.",
+              ],
+              [
+                "02",
+                "Paste the link",
+                "Paste it into VidSavio and confirm your rights.",
+              ],
+              [
+                "03",
+                "Choose quality",
+                "Select the available format that fits your device.",
+              ],
+            ].map(([step, title, text]) => (
+              <div key={step} className="step-card">
+                <span>{step}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
               </div>
             ))}
           </div>
@@ -173,21 +215,34 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-slate-900">
-            Common Questions
-          </h2>
-          <div className="space-y-4">
-            {[
-              "Is it free?",
-              "Do I need to register?",
-              "Is it safe?",
-              "What formats are supported?",
-            ].map((q) => (
-              <div key={q} className="card">
-                <p className="font-bold text-slate-900">{q}</p>
-              </div>
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-black text-slate-950">
+                Responsible Downloading Guides
+              </h2>
+              <p className="mt-3 text-slate-600">
+                SEO-friendly articles focused on lawful offline viewing.
+              </p>
+            </div>
+            <a href="/blog" className="font-bold text-violet-700">
+              View Blog
+            </a>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {blogPosts.map((post) => (
+              <a key={post.slug} href={`/blog/${post.slug}`} className="card">
+                <p className="text-sm font-semibold text-violet-700">
+                  {post.date}
+                </p>
+                <h3 className="mt-2 text-xl font-bold text-slate-950">
+                  {post.title}
+                </h3>
+                <p className="mt-3 text-sm text-slate-600">
+                  {post.description}
+                </p>
+              </a>
             ))}
           </div>
         </div>

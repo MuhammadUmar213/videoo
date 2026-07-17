@@ -1,11 +1,11 @@
 {
-  "name": "DownloadAnyVideo",
-  "short_name": "DownloadAnyVideo",
-  "description": "Download videos from 50+ platforms",
+  "name": "VidSavio",
+  "short_name": "VidSavio",
+  "description": "Save permitted videos for offline viewing",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#00B4FF",
+  "theme_color": "#0f766e",
   "orientation": "portrait-primary",
   "icons": [
     {

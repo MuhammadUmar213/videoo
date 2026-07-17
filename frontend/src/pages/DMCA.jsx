@@ -1,77 +1,66 @@
+import SEO from "../components/SEO";
+import { site } from "../data/site";
+
 export default function DMCA() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold mb-8">DMCA Takedown Notice</h1>
+    <div className="mx-auto max-w-4xl px-4 py-16">
+      <SEO
+        title="DMCA Copyright Policy | VidSavio"
+        description="Rights holders can contact VidSavio for copyright and DMCA takedown requests."
+        path="/dmca-copyright-policy"
+      />
+      <h1 className="mb-8 text-4xl font-bold text-slate-950">
+        DMCA Copyright Policy
+      </h1>
 
-      <div className="space-y-6 text-gray-700">
-        <section>
+      <div className="space-y-6 text-slate-700">
+        <section className="card">
           <p className="text-lg font-bold">
-            DownloadAnyVideo respects copyright law and the Digital Millennium
-            Copyright Act (DMCA).
+            {site.name} respects copyright law and the Digital Millennium
+            Copyright Act.
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-bold mb-4">
-            Reporting Copyrighted Content
-          </h2>
+        <section className="card">
+          <h2 className="mb-4 text-2xl font-bold">Reporting Copyright Issues</h2>
           <p>
-            If you believe your copyrighted work has been infringed, please
-            submit a DMCA takedown notice:
+            If you believe your copyrighted work has been infringed through use
+            of this service, submit a notice to{" "}
+            <a className="text-fuchsia-600" href={`mailto:${site.dmcaEmail}`}>
+              {site.dmcaEmail}
+            </a>
+            .
           </p>
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <p>
-              <strong>Email:</strong> dmca@downloadanyvideo.com
-            </p>
-            <p className="mt-2">
-              <strong>Include in your notice:</strong>
-            </p>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Your name and contact information</li>
-              <li>Description of the copyrighted work</li>
-              <li>URL of the infringing content</li>
-              <li>Statement under penalty of perjury</li>
-              <li>Your physical or electronic signature</li>
-            </ul>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Our Response</h2>
-          <p>Upon receiving a valid DMCA notice, we will:</p>
-          <ul className="list-disc list-inside space-y-2 mt-2">
-            <li>Investigate the claim</li>
-            <li>Remove or disable access to infringing content if warranted</li>
-            <li>Notify the uploader if applicable</li>
-            <li>Preserve evidence for legal proceedings</li>
+          <ul className="mt-4 list-inside list-disc space-y-2">
+            <li>Your name and contact information</li>
+            <li>Description of the copyrighted work</li>
+            <li>The URL or identifying information for the disputed content</li>
+            <li>A good-faith statement that the use is unauthorized</li>
+            <li>Your physical or electronic signature</li>
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-bold mb-4">False Claims</h2>
+        <section className="card">
+          <h2 className="mb-4 text-2xl font-bold">Our Response</h2>
           <p>
-            False DMCA claims may result in legal liability for damages and
-            attorney fees.
+            We review complete notices and take appropriate action, including
+            restricting access where warranted.
           </p>
         </section>
       </div>
 
-      <div className="mt-12 card">
-        <h3 className="text-xl font-bold mb-4">Submit DMCA Takedown Notice</h3>
+      <div className="card mt-12">
+        <h3 className="mb-4 text-xl font-bold">Submit DMCA Takedown Notice</h3>
         <form className="space-y-4">
-          <input
-            type="email"
-            placeholder="Your Email"
-            className="input-primary w-full"
-          />
+          <input type="email" placeholder="Your email" className="input-primary w-full" />
           <textarea
             placeholder="Describe the copyrighted work..."
             className="input-primary w-full"
             rows="4"
-          ></textarea>
+          />
           <input
             type="url"
-            placeholder="URL of infringing content"
+            placeholder="URL or identifying information"
             className="input-primary w-full"
           />
           <button type="submit" className="btn-primary">
