@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE = '/api'
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -27,10 +27,8 @@ export const fetchVideoInfo = async (url) => {
 
 export const downloadVideo = async (url, format, quality) => {
   try {
-    const response = await api.post('/download', { url, format, quality }, {
-      responseType: 'blob'
-    })
-    return response.data
+    const { data } = await api.post('/download', { url, format, quality })
+    return data
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Download failed')
   }

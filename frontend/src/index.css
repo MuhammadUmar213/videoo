@@ -93,7 +93,7 @@ body {
 }
 
 .feature-icon {
-  @apply flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-r from-yellow-400 to-emerald-400 text-sm font-bold text-slate-900;
+  @apply flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-bold text-white;
 }
 
 .step-card {
@@ -101,7 +101,7 @@ body {
 }
 
 .step-card span {
-  @apply text-2xl font-black bg-gradient-to-r from-yellow-400 to-emerald-400 bg-clip-text text-transparent;
+  @apply text-2xl font-black bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent;
 }
 
 .step-card h3 {
@@ -113,7 +113,7 @@ body {
 }
 
 .trust-dot {
-  @apply inline-block h-2.5 w-2.5 rounded-full bg-yellow-400;
+  @apply inline-block h-2.5 w-2.5 rounded-full bg-fuchsia-400;
 }
 
 .download-btn {

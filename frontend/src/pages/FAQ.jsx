@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AdBanner, AdResponsive } from "../components/AdPlaceholder";
 import SEO from "../components/SEO";
 
 export default function FAQ() {
@@ -37,7 +36,7 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16">
+    <div className="bg-white">
       <SEO
         title="FAQ | VidSavio"
         description="Answers about VidSavio formats, permitted use, account requirements, and platform support."
@@ -53,38 +52,39 @@ export default function FAQ() {
         }}
       />
 
-      <div className="mb-8">
-        <AdBanner />
-      </div>
+      <section className="hero-gradient px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-5xl text-center">
+          <h1 className="text-4xl font-black text-white sm:text-5xl">
+            Frequently Asked Questions
+          </h1>
+          <p className="mt-3 max-w-2xl mx-auto text-lg text-violet-100">
+            Everything you need to know about VidSavio, formats, permissions,
+            and supported platforms.
+          </p>
+        </div>
+      </section>
 
-      <h1 className="mb-12 text-4xl font-bold text-slate-950">
-        Frequently Asked Questions
-      </h1>
-      <div className="space-y-4">
-        {faqs.map((faq, idx) => (
-          <div key={`faq-section-${idx}`}>
-            <div className="card">
-              <button
-                onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                className="flex w-full items-center justify-between gap-4 text-left text-lg font-bold"
-              >
-                {faq.q}
-                <span className="text-fuchsia-600">
-                  {openIndex === idx ? "-" : "+"}
-                </span>
-              </button>
-              {openIndex === idx && (
-                <p className="mt-4 text-slate-600">{faq.a}</p>
-              )}
-            </div>
-
-            {idx === 2 && (
-              <div key={`ad-faq-${idx}`} className="my-8">
-                <AdResponsive />
+      <div className="mx-auto max-w-4xl px-4 py-16">
+        <div className="space-y-4">
+          {faqs.map((faq, idx) => (
+            <div key={`faq-section-${idx}`}>
+              <div className="card">
+                <button
+                  onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+                  className="flex w-full items-center justify-between gap-4 text-left text-lg font-bold"
+                >
+                  {faq.q}
+                  <span className="text-fuchsia-600">
+                    {openIndex === idx ? "-" : "+"}
+                  </span>
+                </button>
+                {openIndex === idx && (
+                  <p className="mt-4 text-slate-600">{faq.a}</p>
+                )}
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
