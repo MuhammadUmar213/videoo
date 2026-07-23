@@ -2,13 +2,32 @@ import express from "express";
 import Download from "../models/Download.js";
 
 const router = express.Router();
+const allowedProtocols = new Set(["http:", "https:"]);
+const allowedFormats = new Set(["mp4", "mp3", "webm"]);
+const allowedQualities = new Set(["4K", "1080p", "720p", "480p", "360p", "audio"]);
+
+const validateUrl = (url) => {
+  if (typeof url !== "string" || !url.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(url.trim());
+    return allowedProtocols.has(parsed.protocol) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
 
 router.post("/fetch-info", async (req, res) => {
   try {
     const { url } = req.body;
+    const parsedUrl = validateUrl(url);
 
-    if (!url) {
-      return res.status(400).json({ error: "URL is required" });
+    if (!parsedUrl) {
+      return res
+        .status(400)
+        .json({ error: "A valid HTTP or HTTPS URL is required" });
     }
 
     const mockInfo = {
@@ -22,7 +41,7 @@ router.post("/fetch-info", async (req, res) => {
         { quality: "720p", format: "mp4" },
         { quality: "audio", format: "mp3" },
       ],
-      platform: getPlatformFromUrl(url),
+      platform: getPlatformFromUrl(parsedUrl.href),
     };
 
     res.json(mockInfo);
@@ -34,20 +53,21 @@ router.post("/fetch-info", async (req, res) => {
 router.post("/download", async (req, res) => {
   try {
     const { url, format, quality } = req.body;
+    const parsedUrl = validateUrl(url);
 
-    if (!url || !format || !quality) {
+    if (!parsedUrl || !allowedFormats.has(format) || !allowedQualities.has(quality)) {
       return res
         .status(400)
-        .json({ error: "URL, format, and quality are required" });
+        .json({ error: "A valid URL, format, and quality are required" });
     }
 
-    await logDownload(url, format, quality, req.ip);
+    await logDownload(parsedUrl.href, format, quality, req.ip);
 
     res.json({
-      message: "Download started",
-      url,
+      message: "Request recorded",
       format,
       quality,
+      platform: getPlatformFromUrl(parsedUrl.href),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

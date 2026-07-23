@@ -28,7 +28,7 @@ remote MongoDB connection string:
 NODE_ENV=production
 MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster0.example.mongodb.net/downloadanyvideo?retryWrites=true&w=majority
 MONGODB_DB_NAME=downloadanyvideo
-FRONTEND_URL=https://your-domain.com
+FRONTEND_URL=https://vidsavio.com
 ```
 
 ## Development

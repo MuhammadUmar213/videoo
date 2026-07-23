@@ -1,249 +1,136 @@
 # Deployment Guide
 
-## 🚀 Deploy to VPS (Self-Hosted)
+## Hostinger
 
-### Prerequisites
+Use one of these two deployment modes. Do not mix them.
 
-- Ubuntu 20.04+ or similar Linux
-- Node.js 18+
-- MongoDB
-- Nginx (reverse proxy)
-- SSL certificate (Let's Encrypt)
+### Full app on Hostinger Node.js
 
-### 1. Server Setup
+Use this when Hostinger will run the Express backend and serve the React build from the same app.
 
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
+Hostinger settings:
 
-# Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Install MongoDB
-sudo apt install -y mongodb
-
-# Install Nginx
-sudo apt install -y nginx
-
-# Install PM2 (process manager)
-sudo npm install -g pm2
+```text
+Repository branch: main
+Application root: /
+Build command: npm install && npm run build
+Start command: npm start
+Public/output directory: frontend/dist
 ```
 
-### 2. Clone Project
-
-```bash
-cd /var/www
-git clone <your-repo-url> downloadanyvideo
-cd downloadanyvideo
-```
-
-### 3. Install Dependencies
-
-```bash
-npm install  # Installs all workspaces
-```
-
-### 4. Environment Configuration
-
-```bash
-# Backend
-cd backend
-cp .env.example .env
-# Edit .env with production values
-nano .env
-
-# Frontend
-cd ../frontend
-cp .env.example .env
-# Edit .env with production API URL
-nano .env
-```
-
-### 5. Build Frontend
-
-```bash
-cd frontend
-npm run build
-```
-
-### 6. Start Services with PM2
-
-```bash
-# Start backend
-pm2 start "npm run start --workspace=backend" --name downloadanyvideo-api
-
-# Start frontend (serve dist)
-pm2 start "npm install -g serve && serve -s frontend/dist -l 3000" --name downloadanyvideo-web
-
-# Save PM2 config
-pm2 save
-sudo pm2 startup
-```
-
-### 7. Nginx Configuration
-
-Create `/etc/nginx/sites-available/downloadanyvideo`:
-
-```nginx
-upstream api_backend {
-    server localhost:5000;
-}
-
-upstream frontend {
-    server localhost:3000;
-}
-
-server {
-    listen 80;
-    server_name downloadanyvideo.com www.downloadanyvideo.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name downloadanyvideo.com www.downloadanyvideo.com;
-
-    ssl_certificate /etc/letsencrypt/live/downloadanyvideo.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/downloadanyvideo.com/privkey.pem;
-
-    # API routes
-    location /api/ {
-        proxy_pass http://api_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # Frontend
-    location / {
-        proxy_pass http://frontend;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-Enable site:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/downloadanyvideo /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-### 8. SSL Certificate (Let's Encrypt)
-
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot certonly --nginx -d downloadanyvideo.com -d www.downloadanyvideo.com
-```
-
-### 9. Firewall
-
-```bash
-sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
-```
-
-### 10. Monitoring
-
-```bash
-pm2 log
-pm2 monit
-```
-
-## MongoDB Setup
-
-### Local MongoDB
-
-```bash
-sudo systemctl start mongodb
-sudo systemctl enable mongodb
-```
-
-### MongoDB Atlas (Cloud)
-
-1. Create cluster at mongodb.com/cloud
-2. Create a database user and allow your server IP address
-3. Add the remote connection string to `.env`
+Required environment variables:
 
 ```env
 NODE_ENV=production
-MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster0.example.mongodb.net/downloadanyvideo?retryWrites=true&w=majority
+PORT=<Hostinger-provided port, if shown in panel>
+MONGODB_URI=mongodb+srv://USER:PASSWORD@HOST/downloadanyvideo?retryWrites=true&w=majority
 MONGODB_DB_NAME=downloadanyvideo
-MONGODB_MAX_POOL_SIZE=10
+FRONTEND_URL=https://YOUR_DOMAIN
+VITE_API_URL=/api
+RATE_LIMIT_MAX=60
 ```
 
-## 🔄 CI/CD (GitHub Actions)
+Important: production will not start with the local MongoDB URL. Create a MongoDB Atlas database and add its connection string as `MONGODB_URI`.
 
-Create `.github/workflows/deploy.yml`:
+### Static frontend only
 
-```yaml
-name: Deploy
+Use this only if the backend is deployed somewhere else.
 
-on:
-  push:
-    branches: [main]
+Hostinger settings:
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - run: npm install
-      - run: npm run build --workspaces
-      - uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /var/www/downloadanyvideo
-            git pull
-            npm install
-            npm run build --workspaces
-            pm2 restart downloadanyvideo-api downloadanyvideo-web
+```text
+Application root: frontend
+Build command: npm install && npm run build
+Output directory: dist
 ```
 
-## 🔧 Maintenance
+Set `VITE_API_URL` to the deployed backend API URL, for example:
 
-### Backup Database
+```env
+VITE_API_URL=https://api.yourdomain.com/api
+```
+
+The frontend alone cannot process `/api/download` requests unless a backend is also deployed.
+
+## Google Cloud Run
+
+This repo is set up for two Cloud Run services:
+
+- `vidsavio-api`: Express backend
+- `vidsavio-web`: Vite frontend served as static files
+
+### Required production values
+
+Create a MongoDB Atlas database first, then store the connection string in Secret Manager:
 
 ```bash
-mongodump --out /backups/mongo-backup-$(date +%Y%m%d)
+gcloud secrets create MONGODB_URI --replication-policy=automatic
+printf "mongodb+srv://USER:PASSWORD@HOST/downloadanyvideo?retryWrites=true&w=majority" | gcloud secrets versions add MONGODB_URI --data-file=-
 ```
 
-### Check Logs
+Set these values before deployment:
 
 ```bash
-pm2 logs downloadanyvideo-api
-pm2 logs downloadanyvideo-web
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com
 ```
 
-### Update Application
+### Deploy with Cloud Build
+
+Update substitutions in `cloudbuild.yaml` if your service names, region, frontend domain, or MongoDB secret name are different.
 
 ```bash
-cd /var/www/downloadanyvideo
-git pull
-npm install
-npm run build --workspaces
-pm2 restart all
+gcloud builds submit --config cloudbuild.yaml
 ```
 
-## ✅ Verification
+The pipeline deploys the backend first, reads the real Cloud Run backend URL, and builds the frontend with that URL as `VITE_API_URL`.
 
-- Frontend: `https://downloadanyvideo.com`
-- API: `https://downloadanyvideo.com/api/health`
-- Monitor: `pm2 monit`
+### Backend environment
 
----
+Production backend requirements:
 
-**For advanced deployments, consider AWS, DigitalOcean App Platform, or Heroku.**
+```env
+NODE_ENV=production
+MONGODB_URI=<stored in Secret Manager>
+FRONTEND_URL=https://vidsavio.com
+RATE_LIMIT_MAX=60
+```
+
+`FRONTEND_URL` can contain comma-separated origins if you need both a custom domain and a Cloud Run preview URL.
+
+### Frontend environment
+
+For split frontend/backend deployments, build the frontend with:
+
+```env
+VITE_API_URL=https://YOUR_BACKEND_URL/api
+```
+
+For a single-domain reverse-proxy deployment, use:
+
+```env
+VITE_API_URL=/api
+```
+
+### Verification
+
+Check these after deployment:
+
+```bash
+curl https://YOUR_BACKEND_URL/api/health
+curl https://YOUR_FRONTEND_URL
+```
+
+The backend health response should return JSON with `status`, `database`, `timestamp`, `uptime`, and `version`.
+
+## Local Docker
+
+For local development with MongoDB:
+
+```bash
+docker-compose up --build
+```
+
+Frontend: `http://localhost:3000`
+
+Backend: `http://localhost:5000/api/health`
