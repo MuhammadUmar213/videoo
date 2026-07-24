@@ -44,32 +44,32 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="hero-gradient relative px-4 py-12 sm:px-6 lg:px-8 lg:py-24">
+      <section className="hero-gradient relative px-4 py-9 sm:px-6 sm:py-14 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-5xl text-center">
-          <div className="mx-auto mb-5 flex w-fit flex-wrap justify-center gap-2 rounded-full border border-white/30 bg-white/10 backdrop-blur-md p-1 shadow-lg">
+          <div className="mx-auto mb-5 flex w-full max-w-full gap-2 overflow-x-auto rounded-full border border-white/30 bg-white/10 p-1 shadow-lg backdrop-blur-md sm:w-fit sm:flex-wrap sm:justify-center sm:overflow-visible">
             {platforms.slice(0, 5).map((platform) => (
               <a
                 key={platform.path}
                 href={platform.path}
-                className="rounded-full px-4 py-2 text-sm font-bold text-white hover:bg-white/20 transition"
+                className="shrink-0 rounded-full px-3 py-2 text-xs font-bold text-white transition hover:bg-white/20 sm:px-4 sm:text-sm"
               >
                 {platform.name}
               </a>
             ))}
           </div>
 
-          <p className="text-sm font-bold uppercase tracking-wide text-violet-200">
+          <p className="text-xs font-bold uppercase tracking-wide text-violet-200 sm:text-sm">
             Fast, clean, permission-first downloader
           </p>
-          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="mx-auto mt-3 max-w-4xl text-3xl font-black leading-tight text-white sm:mt-4 sm:text-5xl lg:text-6xl">
             Download videos you are allowed to save
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-violet-100">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-violet-100 sm:mt-5 sm:text-lg sm:leading-8">
             {site.name} gives you a simple paste-and-download flow for public
             videos you own, have permission to save, or that are lawfully
             available for offline viewing.
           </p>
-          <div className="mx-auto mt-6 flex max-w-2xl flex-wrap justify-center gap-3 text-sm font-semibold text-white">
+          <div className="mx-auto mt-5 flex max-w-2xl flex-wrap justify-center gap-2 text-xs font-semibold text-white sm:mt-6 sm:gap-3 sm:text-sm">
             <span className="rounded-full border border-white/30 bg-white/10 backdrop-blur px-3 py-2">
               No login required
             </span>
@@ -81,17 +81,17 @@ export default function Home() {
             </span>
           </div>
 
-          <form onSubmit={handleSubmit} className="download-panel mx-auto mt-8">
+          <form onSubmit={handleSubmit} className="download-panel mx-auto mt-7 sm:mt-8">
             <div className="flex flex-col gap-3 lg:flex-row">
-              <div className="flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-white/30 bg-white/95 backdrop-blur p-2 shadow-lg sm:flex-row">
+              <div className="flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-white/30 bg-white/95 p-2 shadow-lg backdrop-blur sm:flex-row">
                 <input
                   type="url"
                   value={url}
                   onChange={(event) => setUrl(event.target.value)}
                   placeholder="Paste video URL here"
-                  className="min-h-[52px] flex-1 rounded-md border-0 px-4 text-base font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
+                  className="min-h-[52px] w-full min-w-0 flex-1 rounded-md border-0 px-3 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0 sm:px-4 sm:text-base"
                 />
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex">
                   <button
                     type="button"
                     onClick={pasteFromClipboard}
@@ -108,12 +108,16 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <button type="submit" className="download-btn" disabled={!agreed}>
+              <button
+                type="submit"
+                className="download-btn w-full lg:w-auto"
+                disabled={!agreed}
+              >
                 Download
               </button>
             </div>
 
-            <label className="mt-4 flex gap-3 text-left text-sm font-medium text-slate-700">
+            <label className="mt-4 flex gap-3 rounded-lg bg-white/95 p-3 text-left text-xs font-medium leading-6 text-slate-700 shadow-md sm:bg-transparent sm:p-0 sm:text-sm sm:shadow-none">
               <input
                 type="checkbox"
                 checked={agreed}
@@ -127,7 +131,7 @@ export default function Home() {
             </label>
           </form>
 
-          <div className="mx-auto mt-6 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto mt-6 grid max-w-4xl grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
             {trustItems.map((item) => (
               <div key={item} className="trust-chip">
                 <span className="trust-dot" />
@@ -138,16 +142,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 py-14">
+      <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-black text-slate-950">Key Features</h2>
-            <p className="mt-3 text-slate-600">
+            <h2 className="text-2xl font-black text-slate-950 sm:text-3xl">Key Features</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
               Built for the fast, no-confusion downloader experience users
               expect.
             </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               [
                 "Fast",
@@ -172,11 +176,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-16">
+      <section className="bg-slate-50 px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-black text-slate-950">How It Works</h2>
-            <p className="mt-3 text-slate-600">
+            <h2 className="text-2xl font-black text-slate-950 sm:text-3xl">How It Works</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
               Three simple steps, with permission checked before the format
               request.
             </p>
@@ -209,20 +213,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4">
+      <section className="px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <AdResponsive />
         </div>
       </section>
 
-      <section className="px-4 py-16">
+      <section className="px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-3xl font-black text-slate-950">
+              <h2 className="text-2xl font-black text-slate-950 sm:text-3xl">
                 Responsible Downloading Guides
               </h2>
-              <p className="mt-3 text-slate-600">
+              <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
                 SEO-friendly articles focused on lawful offline viewing.
               </p>
             </div>
