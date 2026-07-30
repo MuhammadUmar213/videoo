@@ -277,6 +277,43 @@ Notes on the ones that are easy to get wrong:
   without that the tags are blocked by CSP. For analytics also set
   `VITE_GA_MEASUREMENT_ID` so the tag actually loads.
 
+### Installing yt-dlp on Hostinger
+
+Hostinger's Node.js deploy runs `npm install`, `npm run build` and `npm start`.
+It does not build the Dockerfile, so the `apk add yt-dlp ffmpeg` line in
+`backend/Dockerfile` does nothing here — that path only applies to Docker hosts
+such as Railway. On Hostinger the binary has to be placed in the account
+manually.
+
+SSH is available on Business and above, restricted to the home directory.
+That restriction is fine: the app takes an absolute path.
+
+```bash
+mkdir -p ~/bin
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/bin/yt-dlp
+chmod +x ~/bin/yt-dlp
+~/bin/yt-dlp --version      # confirms execution is permitted
+```
+
+Then set `YT_DLP_PATH=/home/USERNAME/bin/yt-dlp` in the app's variables.
+
+Two things can go wrong, and both are worth checking before assuming the code
+is at fault:
+
+- **Execution may be blocked.** Managed shared hosting often refuses to run
+  binaries the customer supplied. If `--version` prints nothing or reports
+  permission denied, the plan will not support the downloader and the site will
+  run with it disabled.
+- **The startup cost is real.** The standalone build unpacks itself on every
+  invocation, which measured 8-12 seconds locally. `YT_DLP_TIMEOUT_MS` and
+  `YT_DLP_STARTUP_MS` already allow for that; do not lower them.
+
+`ffmpeg` is a much larger dependency and unlikely to be installable on shared
+hosting. Without it the site works and offers single-file formats only, which
+on YouTube means up to 720p. That is a deliberate choice in the code, not a
+bug: higher resolutions arrive as separate video and audio streams, and
+offering them without a mux would produce silent files.
+
 ### After deploying
 
 ```bash
@@ -284,6 +321,11 @@ curl -I https://YOUR_DOMAIN/                # 200, HTML
 curl https://YOUR_DOMAIN/api/health         # {"status":"healthy"}
 curl https://YOUR_DOMAIN/api/supported-sites
 ```
+
+The last response carries `downloader_available`. `false` means the site is up
+but `yt-dlp` was not found — check `YT_DLP_PATH` and that the binary runs over
+SSH. The first call after a restart can take around ten seconds while the
+engine is probed; subsequent calls are immediate.
 
 `/api/health` returns `{"status":"healthy"}` when the database is connected and
 `503` with `{"status":"degraded"}` when it is not. Detailed uptime and version
