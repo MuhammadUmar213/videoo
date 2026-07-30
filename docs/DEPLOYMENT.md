@@ -1,9 +1,45 @@
 # Deployment Guide
 
+## The downloader needs yt-dlp on the server
+
+Read this before choosing a host. The site has two halves and they have very
+different requirements:
+
+- **The site itself** — pages, blog, legal content, contact form. Runs anywhere
+  Node runs.
+- **The downloader** — shells out to the `yt-dlp` binary and streams the result
+  through the server. This needs the ability to execute a binary that is not
+  part of the Node install, plus real outbound bandwidth for every transfer.
+
+Without `yt-dlp` on the PATH (or at `YT_DLP_PATH`) the API stays up and every
+page works, but `/api/fetch-info` returns a 503 saying the download service is
+not configured. That is deliberate — it is better than serving placeholder
+results that look real.
+
+`ffmpeg` is optional. Without it only single-file formats are offered, which in
+practice means up to 720p on YouTube. 1080p and above exist only as separate
+video and audio streams that have to be muxed, and offering them without ffmpeg
+would hand the visitor a silent file.
+
+### Shared hosting is likely to be a problem for this part
+
+Managed shared hosting generally does not let you execute arbitrary binaries,
+and video transfers are bandwidth-heavy in a way shared plans are not sold for.
+Before committing to a shared plan, confirm with the host that you may install
+and execute `yt-dlp`, and check the bandwidth terms. A VPS avoids both questions
+and is the safer home for the downloader.
+
+Also confirm the host's acceptable-use policy allows this category of service at
+all. Hosting providers have removed stream-ripping sites under legal pressure
+before, so it is worth a written answer rather than an assumption.
+
 ## Hostinger (Business or Cloud plan)
 
 Node.js apps run on the Business and Cloud plans. They are **not** available on
 the Single or Premium shared plans — check the plan before starting.
+
+This section covers hosting the site. Whether the downloader half works depends
+on the binary and bandwidth questions above.
 
 The app deploys as a **single Node process**: Express serves the API under
 `/api` and the built React app for every other path, from one domain. No
@@ -51,6 +87,10 @@ FRONTEND_URL=https://YOUR_DOMAIN
 TRUST_PROXY=1
 RATE_LIMIT_MAX=60
 CONTACT_RATE_LIMIT_MAX=5
+DOWNLOAD_RATE_LIMIT_MAX=10
+YT_DLP_PATH=/full/path/to/yt-dlp
+FFMPEG_PATH=/full/path/to/ffmpeg
+YT_DLP_MAX_CONCURRENT=2
 VITE_API_URL=/api
 ```
 

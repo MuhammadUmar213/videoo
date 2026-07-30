@@ -23,13 +23,18 @@ export const fetchVideoInfo = async (url) => {
   }
 };
 
-export const downloadVideo = async (url, format, quality) => {
-  try {
-    const { data } = await api.post("/download", { url, format, quality });
-    return data;
-  } catch (error) {
-    throw toAppError(error, "Download failed");
-  }
+/**
+ * Builds the URL the browser navigates to in order to receive the file. The
+ * transfer is a plain GET so the browser owns the download, including its own
+ * progress UI and resume behaviour.
+ */
+export const buildDownloadUrl = ({ url, formatId, ext, quality, title }) => {
+  const params = new URLSearchParams({ url, formatId });
+  if (ext) params.set("ext", ext);
+  if (quality) params.set("quality", quality);
+  if (title) params.set("title", title);
+
+  return `${API_BASE}/download?${params.toString()}`;
 };
 
 export const getSupportedSites = async () => {
