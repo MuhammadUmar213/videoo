@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import SEO from "../components/SEO";
 import { site } from "../data/site";
 
@@ -47,9 +48,9 @@ export default function Privacy() {
           <p>
             Essential cookies may support site functionality. Analytics and ad
             cookies may be used if those services are enabled. See the{" "}
-            <a className="text-fuchsia-600" href="/cookie-policy">
+            <Link className="font-semibold text-fuchsia-600 underline" to="/cookie-policy">
               Cookie Policy
-            </a>{" "}
+            </Link>{" "}
             for more detail.
           </p>
         </section>
@@ -58,11 +59,11 @@ export default function Privacy() {
           <h2 className="mb-4 text-2xl font-bold">5. Contact</h2>
           <p>
             Privacy questions can be sent to{" "}
-            <a className="text-fuchsia-600" href={`mailto:${site.supportEmail}`}>
+            <a className="font-semibold text-fuchsia-600 underline" href={`mailto:${site.supportEmail}`}>
               {site.supportEmail}
             </a>
             . Copyright notices should be sent to{" "}
-            <a className="text-fuchsia-600" href={`mailto:${site.dmcaEmail}`}>
+            <a className="font-semibold text-fuchsia-600 underline" href={`mailto:${site.dmcaEmail}`}>
               {site.dmcaEmail}
             </a>
             .

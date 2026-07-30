@@ -1,33 +1,26 @@
 import express from "express";
+import mongoose from "mongoose";
 import Download from "../models/Download.js";
+import {
+  getPlatformFromUrl,
+  hashValue,
+  parseVideoUrl,
+  supportedSites,
+} from "../utils/security.js";
 
 const router = express.Router();
-const allowedProtocols = new Set(["http:", "https:"]);
 const allowedFormats = new Set(["mp4", "mp3", "webm"]);
 const allowedQualities = new Set(["4K", "1080p", "720p", "480p", "360p", "audio"]);
 
-const validateUrl = (url) => {
-  if (typeof url !== "string" || !url.trim()) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(url.trim());
-    return allowedProtocols.has(parsed.protocol) ? parsed : null;
-  } catch {
-    return null;
-  }
-};
-
-router.post("/fetch-info", async (req, res) => {
+router.post("/fetch-info", async (req, res, next) => {
   try {
     const { url } = req.body;
-    const parsedUrl = validateUrl(url);
+    const parsedUrl = parseVideoUrl(url);
 
     if (!parsedUrl) {
       return res
         .status(400)
-        .json({ error: "A valid HTTP or HTTPS URL is required" });
+        .json({ error: "A valid URL from a supported video platform is required" });
     }
 
     const mockInfo = {
@@ -46,14 +39,14 @@ router.post("/fetch-info", async (req, res) => {
 
     res.json(mockInfo);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
-router.post("/download", async (req, res) => {
+router.post("/download", async (req, res, next) => {
   try {
     const { url, format, quality } = req.body;
-    const parsedUrl = validateUrl(url);
+    const parsedUrl = parseVideoUrl(url);
 
     if (!parsedUrl || !allowedFormats.has(format) || !allowedQualities.has(quality)) {
       return res
@@ -70,53 +63,32 @@ router.post("/download", async (req, res) => {
       platform: getPlatformFromUrl(parsedUrl.href),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
 router.get("/supported-sites", (req, res) => {
-  const sites = [
-    "youtube.com",
-    "instagram.com",
-    "facebook.com",
-    "tiktok.com",
-    "twitter.com",
-    "x.com",
-    "vimeo.com",
-    "snapchat.com",
-    "pinterest.com",
-    "twitch.tv",
-  ];
-  res.json({ supported_sites: sites, total: sites.length });
+  res.json({ supported_sites: supportedSites, total: supportedSites.length });
 });
 
-const getPlatformFromUrl = (url) => {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, "");
-    return host.split(".").slice(-2).join(".");
-  } catch {
-    return "unknown";
-  }
-};
-
+// Analytics only. A database problem should degrade reporting, not take the
+// endpoint down or surface a driver error to the caller.
 const logDownload = async (url, format, quality, ip) => {
-  await Download.create({
-    url_hash: hashString(url),
-    format,
-    quality,
-    ip_hash: hashString(ip),
-    platform: getPlatformFromUrl(url),
-  });
-};
-
-const hashString = (str = "") => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
+  if (mongoose.connection.readyState !== 1) {
+    return;
   }
-  return Math.abs(hash).toString(16);
+
+  try {
+    await Download.create({
+      url_hash: hashValue(url),
+      format,
+      quality,
+      ip_hash: hashValue(ip),
+      platform: getPlatformFromUrl(url),
+    });
+  } catch (error) {
+    console.error("Failed to record download:", error.message);
+  }
 };
 
 export default router;

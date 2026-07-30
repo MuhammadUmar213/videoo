@@ -1,10 +1,21 @@
 import { create } from 'zustand'
 
+// localStorage is writable by anything running on this origin, so treat its
+// contents as untrusted: bad JSON or a non-array value must not crash the app.
+const readList = (key) => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key))
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export const useDownloadStore = create((set) => ({
   videoInfo: null,
-  downloadHistory: JSON.parse(localStorage.getItem('downloadHistory')) || [],
-  favorites: JSON.parse(localStorage.getItem('favorites')) || [],
-  
+  downloadHistory: readList('downloadHistory'),
+  favorites: readList('favorites'),
+
   setVideoInfo: (info) => set({ videoInfo: info }),
   
   addToHistory: (download) => set((state) => {

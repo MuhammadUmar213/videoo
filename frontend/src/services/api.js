@@ -1,55 +1,62 @@
-import axios from 'axios'
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 30000
-})
+  timeout: 30000,
+});
 
-// Request interceptor - add error handling
-api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('API Error:', error.response?.data || error.message)
-    return Promise.reject(error)
-  }
-)
+// Turn an axios failure into a plain Error carrying the server's message where
+// there is one, while keeping the original error as `cause` for debugging.
+const toAppError = (error, fallback) => {
+  const message = error?.response?.data?.error || fallback;
+  return new Error(message, { cause: error });
+};
 
 export const fetchVideoInfo = async (url) => {
   try {
-    const { data } = await api.post('/fetch-info', { url })
-    return data
+    const { data } = await api.post("/fetch-info", { url });
+    return data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || 'Failed to fetch video info')
+    throw toAppError(error, "Failed to fetch video info");
   }
-}
+};
 
 export const downloadVideo = async (url, format, quality) => {
   try {
-    const { data } = await api.post('/download', { url, format, quality })
-    return data
+    const { data } = await api.post("/download", { url, format, quality });
+    return data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || 'Download failed')
+    throw toAppError(error, "Download failed");
   }
-}
+};
 
 export const getSupportedSites = async () => {
   try {
-    const { data } = await api.get('/supported-sites')
-    return data
+    const { data } = await api.get("/supported-sites");
+    return data;
   } catch (error) {
-    throw new Error('Failed to fetch supported sites')
+    throw toAppError(error, "Failed to fetch supported sites");
   }
-}
+};
+
+export const sendContactMessage = async (payload) => {
+  try {
+    const { data } = await api.post("/contact", payload);
+    return data;
+  } catch (error) {
+    throw toAppError(error, "Could not send your message. Please try again.");
+  }
+};
 
 export const getHealthCheck = async () => {
   try {
-    const { data } = await api.get('/health')
-    return data
+    const { data } = await api.get("/health");
+    return data;
   } catch (error) {
-    throw new Error('API is not available')
+    throw toAppError(error, "API is not available");
   }
-}
+};
 
-export default api
+export default api;

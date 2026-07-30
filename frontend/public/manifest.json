@@ -1,13 +1,22 @@
 {
-  "name": "VidSavio",
+  "id": "/",
+  "name": "VidSavio - Video Downloader for Permitted Offline Viewing",
   "short_name": "VidSavio",
   "description": "Save permitted videos for offline viewing",
+  "lang": "en",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0f766e",
+  "theme_color": "#7c3aed",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
@@ -19,13 +28,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    }
-  ],
-  "screenshots": [
+    },
     {
-      "src": "/screenshot1.png",
-      "sizes": "540x720",
-      "type": "image/png"
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
