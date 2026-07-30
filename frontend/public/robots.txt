@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
 
+# API paths return data, not pages. On a static host the SPA fallback answers
+# them with index.html, which a crawler would otherwise index as duplicate
+# copies of the home page.
+Disallow: /api/
+
 Sitemap: https://vidsavio.com/sitemap.xml
