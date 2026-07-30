@@ -1,5 +1,84 @@
 # Deployment Guide
 
+## Vercel (frontend) + a separate backend
+
+Vercel is an excellent home for the frontend and a poor one for the
+downloader. Serverless functions are not built for this workload:
+
+| Vercel constraint | What the downloader needs |
+| --- | --- |
+| 60s max duration on Hobby, 800s on Pro with fluid compute | Transfers run for minutes |
+| No persistent process | The rate limiter and concurrency cap live in memory and would reset on every cold start |
+| 250 MB bundle, read-only filesystem | The `yt-dlp` and `ffmpeg` binaries |
+| All traffic is metered bandwidth | Video files, in full, on every download |
+
+So split it:
+
+- **Frontend on Vercel** — static build, global CDN.
+- **Backend on a host with a persistent process and binary execution** — a
+  VPS, Railway, Render, or Fly.io. This is the same Express app; nothing about
+  it changes.
+
+### Vercel project settings
+
+The committed `vercel.json` already builds the frontend. Set one variable:
+
+```env
+VITE_API_URL=https://api.YOUR_DOMAIN/api
+```
+
+Point it at wherever the backend ends up. Then, on the backend, set
+`FRONTEND_URL` to the Vercel domain so CORS lets the browser through.
+
+### Two ways to connect them
+
+**Direct (simplest).** The frontend calls the backend origin straight out.
+Requires the CSP in `vercel.json` to allow it — change `connect-src 'self'` to
+`connect-src 'self' https://api.YOUR_DOMAIN`, otherwise the browser blocks the
+call before it leaves the page.
+
+**Proxied (avoids CORS).** Add a rewrite to `vercel.json` so `/api` is
+same-origin, and leave `VITE_API_URL` as `/api`:
+
+```json
+{ "source": "/api/:path*", "destination": "https://api.YOUR_DOMAIN/api/:path*" }
+```
+
+This one keeps `connect-src 'self'` valid. Note that proxied responses travel
+through Vercel and count against its bandwidth, which is why file transfers
+should skip it — see below.
+
+### Keep file transfers off the CDN
+
+Whichever option you pick, set this so the actual video bytes go straight from
+the backend to the visitor rather than through Vercel's metered bandwidth:
+
+```env
+VITE_DOWNLOAD_URL=https://api.YOUR_DOMAIN/api
+```
+
+Metadata lookups are small JSON and stay on `VITE_API_URL`. The download itself
+is a top-level navigation, so it is not subject to CORS or `connect-src` and
+works cross-origin without extra configuration.
+
+### Verify after deploying
+
+```bash
+curl -I https://YOUR_VERCEL_DOMAIN/            # 200, HTML
+curl https://api.YOUR_DOMAIN/api/health        # {"status":"healthy"}
+curl https://api.YOUR_DOMAIN/api/supported-sites | grep downloader_available
+```
+
+`downloader_available: false` means the backend is running but `yt-dlp` is not
+installed on it — the site will work and the downloader will return a clear
+503.
+
+### Frontend-only on Vercel
+
+Deploying just this repo to Vercel with no backend gives you a working site
+where every `/api` call 404s: the downloader and the contact form will not
+work. That is a valid staging setup, not a launch.
+
 ## The downloader needs yt-dlp on the server
 
 Read this before choosing a host. The site has two halves and they have very

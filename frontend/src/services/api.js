@@ -2,6 +2,13 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
+// File transfers can be gigabytes. When the frontend is on a CDN and the
+// backend elsewhere, sending them through the CDN's proxy burns metered
+// bandwidth for no benefit, so point downloads straight at the backend.
+// Metadata calls are small and stay on API_BASE so they can be proxied
+// same-origin and avoid CORS entirely.
+const DOWNLOAD_BASE = import.meta.env.VITE_DOWNLOAD_URL || API_BASE;
+
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
@@ -34,7 +41,9 @@ export const buildDownloadUrl = ({ url, formatId, ext, quality, title }) => {
   if (quality) params.set("quality", quality);
   if (title) params.set("title", title);
 
-  return `${API_BASE}/download?${params.toString()}`;
+  // A top-level navigation, not a fetch, so this is not subject to CORS or
+  // the page's connect-src.
+  return `${DOWNLOAD_BASE}/download?${params.toString()}`;
 };
 
 export const getSupportedSites = async () => {
