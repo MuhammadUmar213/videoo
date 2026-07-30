@@ -2,7 +2,11 @@ import { spawn } from "child_process";
 
 const YT_DLP_PATH = process.env.YT_DLP_PATH || "yt-dlp";
 const FFMPEG_PATH = process.env.FFMPEG_PATH || "ffmpeg";
-const METADATA_TIMEOUT_MS = Number(process.env.YT_DLP_TIMEOUT_MS || 30000);
+// The standalone yt-dlp build is a PyInstaller bundle that unpacks itself on
+// every invocation, which costs 8-12s before any work starts. Timeouts have to
+// clear that floor or the tool looks broken when it is merely slow to boot.
+const STARTUP_ALLOWANCE_MS = Number(process.env.YT_DLP_STARTUP_MS || 20000);
+const METADATA_TIMEOUT_MS = Number(process.env.YT_DLP_TIMEOUT_MS || 60000);
 const MAX_CONCURRENT = Number(process.env.YT_DLP_MAX_CONCURRENT || 2);
 
 // yt-dlp format ids are short alphanumeric tokens ("137", "251", "18-drc").
@@ -140,23 +144,29 @@ export const probeTools = async () => {
     return toolCache;
   }
 
-  const check = async (command) => {
-    try {
-      const out = await run(command, ["-version"], { timeoutMs: 8000, maxBuffer: 1 << 20 });
-      return out.trim().split("\n")[0];
-    } catch {
+  // yt-dlp answers to --version, ffmpeg to -version. Try the flag the tool
+  // actually uses first: a wrong guess costs a whole startup cycle.
+  const check = async (command, flags) => {
+    for (const flag of flags) {
       try {
-        const out = await run(command, ["--version"], { timeoutMs: 8000, maxBuffer: 1 << 20 });
-        return out.trim().split("\n")[0];
+        const out = await run(command, [flag], {
+          timeoutMs: STARTUP_ALLOWANCE_MS,
+          maxBuffer: 1 << 20,
+        });
+        const line = out.trim().split("\n")[0];
+        if (line) {
+          return line;
+        }
       } catch {
-        return null;
+        // Fall through to the next flag.
       }
     }
+    return null;
   };
 
   const [ytDlp, ffmpeg] = await Promise.all([
-    check(YT_DLP_PATH),
-    check(FFMPEG_PATH),
+    check(YT_DLP_PATH, ["--version"]),
+    check(FFMPEG_PATH, ["-version", "--version"]),
   ]);
 
   toolCache = { ytDlp, ffmpeg };
