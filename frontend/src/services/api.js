@@ -2,6 +2,13 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
+// File transfers can be gigabytes. When the frontend is on a CDN and the
+// backend elsewhere, sending them through the CDN's proxy burns metered
+// bandwidth for no benefit, so point downloads straight at the backend.
+// Metadata calls are small and stay on API_BASE so they can be proxied
+// same-origin and avoid CORS entirely.
+const DOWNLOAD_BASE = import.meta.env.VITE_DOWNLOAD_URL || API_BASE;
+
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
@@ -23,13 +30,20 @@ export const fetchVideoInfo = async (url) => {
   }
 };
 
-export const downloadVideo = async (url, format, quality) => {
-  try {
-    const { data } = await api.post("/download", { url, format, quality });
-    return data;
-  } catch (error) {
-    throw toAppError(error, "Download failed");
-  }
+/**
+ * Builds the URL the browser navigates to in order to receive the file. The
+ * transfer is a plain GET so the browser owns the download, including its own
+ * progress UI and resume behaviour.
+ */
+export const buildDownloadUrl = ({ url, formatId, ext, quality, title }) => {
+  const params = new URLSearchParams({ url, formatId });
+  if (ext) params.set("ext", ext);
+  if (quality) params.set("quality", quality);
+  if (title) params.set("title", title);
+
+  // A top-level navigation, not a fetch, so this is not subject to CORS or
+  // the page's connect-src.
+  return `${DOWNLOAD_BASE}/download?${params.toString()}`;
 };
 
 export const getSupportedSites = async () => {

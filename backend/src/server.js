@@ -9,6 +9,7 @@ import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { connectDB } from "./config/database.js";
 import { assertSecurityConfig } from "./utils/security.js";
+import { probeTools } from "./utils/ytdlp.js";
 import downloadRoutes from "./routes/download.js";
 import healthRoutes from "./routes/health.js";
 import contactRoutes from "./routes/contact.js";
@@ -138,6 +139,12 @@ app.use("/api/", limiter);
 
 // Database Connection
 connectDB();
+
+// Probe the downloader binaries at boot. Left until the first request, this
+// costs that visitor the whole startup cycle of a self-unpacking yt-dlp build.
+probeTools().catch((error) => {
+  console.error("Tool probe failed:", error.message);
+});
 
 // Routes
 app.use("/api", downloadRoutes);

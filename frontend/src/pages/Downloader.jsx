@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { useSearchParams } from "react-router";
 import SEO from "../components/SEO";
-import { downloadVideo, fetchVideoInfo } from "../services/api";
+import { buildDownloadUrl, fetchVideoInfo } from "../services/api";
 
 export default function Downloader() {
   const [searchParams] = useSearchParams();
@@ -10,7 +10,6 @@ export default function Downloader() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [selecting, setSelecting] = useState(null);
   const [selectionStatus, setSelectionStatus] = useState("");
   const inputId = useId();
   const consentId = useId();
@@ -50,22 +49,38 @@ export default function Downloader() {
     }
   };
 
-  const handleSelectFormat = async (item) => {
-    const key = `${item.quality}-${item.format}`;
-    setSelecting(key);
-    setSelectionStatus("");
+  const handleSelectFormat = (item) => {
     setError("");
+    setSelectionStatus(
+      `Starting ${item.quality} ${item.format.toUpperCase()} download. Large files can take a moment to begin.`,
+    );
 
-    try {
-      await downloadVideo(url.trim(), item.format, item.quality);
-      setSelectionStatus(
-        `Requested ${item.quality} ${item.format.toUpperCase()}. You will be notified when the file is ready.`,
-      );
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSelecting(null);
-    }
+    // Hand the transfer to the browser so it gets a real progress indicator
+    // and can resume, rather than buffering the whole file in the page.
+    window.location.assign(
+      buildDownloadUrl({
+        url: url.trim(),
+        formatId: item.formatId,
+        ext: item.format,
+        quality: item.quality,
+        title: video?.title,
+      }),
+    );
+  };
+
+  const formatSize = (bytes) => {
+    if (!bytes) return null;
+    const mb = bytes / (1024 * 1024);
+    return mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`;
+  };
+
+  const formatDuration = (seconds) => {
+    const total = Math.round(seconds);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = (n) => String(n).padStart(2, "0");
+    return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
   };
 
   return (
@@ -182,29 +197,33 @@ export default function Downloader() {
               <div>
                 <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   {video.platform}
+                  {video.uploader ? ` · ${video.uploader}` : ""}
+                  {video.duration ? ` · ${formatDuration(video.duration)}` : ""}
                 </p>
                 <h2 className="mb-4 mt-2 text-2xl font-bold text-slate-950">
                   {video.title}
                 </h2>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {video.formats?.map((item) => {
-                    const key = `${item.quality}-${item.format}`;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => handleSelectFormat(item)}
-                        disabled={selecting !== null}
-                        className="btn-secondary flex items-center justify-between text-left disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <span>{item.quality}</span>
-                        <span className="text-xs uppercase text-slate-500">
-                          {selecting === key ? "Requesting…" : item.format}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {video.formats?.map((item) => (
+                    <button
+                      key={item.formatId}
+                      type="button"
+                      onClick={() => handleSelectFormat(item)}
+                      className="btn-secondary flex items-center justify-between gap-3 text-left"
+                    >
+                      <span className="font-bold">{item.quality}</span>
+                      <span className="text-xs uppercase text-slate-500">
+                        {formatSize(item.filesize)
+                          ? `${item.format} · ${formatSize(item.filesize)}`
+                          : item.format}
+                      </span>
+                    </button>
+                  ))}
                 </div>
+                <p className="mt-4 text-xs text-slate-500">
+                  Downloads run through this server. Only save content you own
+                  or have permission to download.
+                </p>
               </div>
             </div>
           </div>
