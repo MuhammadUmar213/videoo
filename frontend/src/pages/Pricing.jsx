@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import SEO from "../components/SEO";
 import { site } from "../data/site";
 
@@ -51,8 +52,8 @@ export default function Pricing() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-2">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -84,8 +85,8 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <a
-                href="/contact"
+              <Link
+                to={tier.name === "Free" ? "/download" : "/contact"}
                 className={`mt-8 inline-flex rounded-md px-5 py-3 font-semibold transition ${
                   tier.highlighted
                     ? "bg-fuchsia-700 text-white hover:bg-fuchsia-800"
@@ -93,7 +94,7 @@ export default function Pricing() {
                 }`}
               >
                 {tier.name === "Free" ? "Get started" : "Request Pro access"}
-              </a>
+              </Link>
             </div>
           ))}
         </div>
@@ -107,18 +108,18 @@ export default function Pricing() {
             use, and transparent terms so you can use VidSavio with confidence.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <a
-              href="/terms-and-conditions"
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800"
+            <Link
+              to="/terms-and-conditions"
+              className="rounded-md border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 transition hover:border-fuchsia-600 hover:text-fuchsia-600"
             >
               Review Terms
-            </a>
-            <a
-              href="/privacy-policy"
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800"
+            </Link>
+            <Link
+              to="/privacy-policy"
+              className="rounded-md border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 transition hover:border-fuchsia-600 hover:text-fuchsia-600"
             >
               Privacy Policy
-            </a>
+            </Link>
           </div>
         </div>
       </div>

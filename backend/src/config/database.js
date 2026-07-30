@@ -35,7 +35,17 @@ export const connectDB = async () => {
     console.log(`MongoDB connected: ${getSafeMongoHost(MONGODB_URI)}`);
   } catch (error) {
     console.error("MongoDB connection error:", error.message);
-    process.exit(1);
+
+    // Production still fails fast: a misconfigured database must not serve
+    // traffic. Locally the API is usable without Mongo (only download
+    // analytics need it), so keep the dev server up instead of exiting.
+    if (isProduction) {
+      process.exit(1);
+    }
+
+    console.warn(
+      "Continuing without a database connection. Download analytics will not be recorded.",
+    );
   }
 };
 

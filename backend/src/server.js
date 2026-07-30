@@ -8,8 +8,10 @@ import path from "path";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { connectDB } from "./config/database.js";
+import { assertSecurityConfig } from "./utils/security.js";
 import downloadRoutes from "./routes/download.js";
 import healthRoutes from "./routes/health.js";
+import contactRoutes from "./routes/contact.js";
 
 dotenv.config();
 
@@ -25,15 +27,79 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+// Fail fast on a misconfigured deployment rather than serving traffic with
+// weak defaults.
+assertSecurityConfig();
+
 app.disable("x-powered-by");
-app.set("trust proxy", 1);
+
+// Number of reverse proxies in front of the app. Trusting more hops than
+// actually exist lets a client forge X-Forwarded-For, which would spoof both
+// the rate-limit key and the logged IP. Set TRUST_PROXY=0 when the app is
+// exposed directly.
+const trustProxy = process.env.TRUST_PROXY ?? "1";
+app.set("trust proxy", trustProxy === "0" ? false : Number(trustProxy) || 1);
+
+// Third-party origins the page is allowed to load scripts from and talk to.
+// Analytics and ads stay blocked unless they are explicitly switched on, so a
+// stray tag cannot start exfiltrating page data.
+const analyticsEnabled = process.env.ENABLE_ANALYTICS === "true";
+const adsEnabled = process.env.ENABLE_ADS === "true";
+
+const scriptSrc = [
+  "'self'",
+  ...(analyticsEnabled ? ["https://www.googletagmanager.com"] : []),
+  ...(adsEnabled ? ["https://pagead2.googlesyndication.com"] : []),
+];
+
+const connectSrc = [
+  "'self'",
+  ...(analyticsEnabled
+    ? ["https://www.google-analytics.com", "https://*.analytics.google.com"]
+    : []),
+];
+
+const frameSrc = adsEnabled ? ["https://googleads.g.doubleclick.net"] : ["'none'"];
 
 // Security Middleware
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc,
+        // React sets inline style attributes, which requires unsafe-inline.
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        fontSrc: ["'self'", "data:"],
+        connectSrc,
+        frameSrc,
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        ...(isProduction ? { upgradeInsecureRequests: [] } : {}),
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    frameguard: { action: "deny" },
   }),
 );
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  );
+  next();
+});
 
 // CORS Configuration
 const corsOptions = {
@@ -43,7 +109,9 @@ const corsOptions = {
       return;
     }
 
-    callback(new Error("Not allowed by CORS"));
+    const error = new Error("Not allowed by CORS");
+    error.status = 403;
+    callback(error);
   },
   credentials: true,
   methods: ["GET", "POST", "OPTIONS"],
@@ -55,8 +123,8 @@ app.use(cors(corsOptions));
 app.use(morgan(isProduction ? "combined" : "dev"));
 
 // Body Parser
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ limit: "1mb", extended: true }));
+app.use(express.json({ limit: "100kb", type: "application/json" }));
+app.use(express.urlencoded({ limit: "100kb", extended: false }));
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -74,6 +142,7 @@ connectDB();
 // Routes
 app.use("/api", downloadRoutes);
 app.use("/api", healthRoutes);
+app.use("/api", contactRoutes);
 
 if (isProduction && existsSync(frontendIndexPath)) {
   app.use(express.static(frontendDistPath));

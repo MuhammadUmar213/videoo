@@ -2,11 +2,14 @@ FROM node:20-alpine as build
 
 WORKDIR /app/frontend
 
-COPY package*.json ./
+RUN chown -R node:node /app
+USER node
 
-RUN npm install
+COPY --chown=node:node package*.json ./
 
-COPY . .
+RUN npm install --no-audit --no-fund
+
+COPY --chown=node:node . .
 
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
@@ -17,9 +20,12 @@ FROM node:20-alpine
 
 WORKDIR /app/frontend
 
-RUN npm install -g serve
+RUN npm install -g serve && chown -R node:node /app
 
-COPY --from=build /app/frontend/dist ./dist
+# Serving static files needs no privileges; drop to the unprivileged user.
+USER node
+
+COPY --from=build --chown=node:node /app/frontend/dist ./dist
 
 EXPOSE 3000
 
