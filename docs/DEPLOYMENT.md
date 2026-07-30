@@ -1,56 +1,106 @@
 # Deployment Guide
 
-## Hostinger
+## Hostinger (Business or Cloud plan)
 
-Use one of these two deployment modes. Do not mix them.
+Node.js apps run on the Business and Cloud plans. They are **not** available on
+the Single or Premium shared plans — check the plan before starting.
 
-### Full app on Hostinger Node.js
+The app deploys as a **single Node process**: Express serves the API under
+`/api` and the built React app for every other path, from one domain. No
+separate static host and no reverse proxy are needed.
 
-Use this when Hostinger will run the Express backend and serve the React build from the same app.
+### Before you start
 
-Hostinger settings:
+1. **MongoDB Atlas database.** Production refuses to start with a localhost
+   MongoDB URL, so create a free Atlas cluster and copy its connection string.
+   In Atlas, allow access from anywhere (`0.0.0.0/0`) or from Hostinger's
+   outbound IPs, otherwise the connection times out.
+2. **Generate a hash secret.** The server will not boot without it:
+
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+### Deploy from GitHub
+
+In hPanel: **Websites → Add Website → Deploy Web App → Import Git Repository**,
+authorise GitHub, then pick this repository.
 
 ```text
-Repository branch: main
-Application root: /
-Build command: npm install && npm run build
-Start command: npm start
-Public/output directory: frontend/dist
+Branch:            main
+Node version:      22.x   (20.x also works; 18.x will FAIL — Vite 7 requires 20.19+)
+Application root:  /
+Build command:     npm install && npm run build
+Start command:     npm start
+Entry file:        backend/src/server.js
 ```
 
-Required environment variables:
+Leave the output/public directory empty, or point it at `frontend/dist`. The
+Node process serves those files itself — this is not a static deployment.
+
+### Environment variables
+
+Set these in the app's Environment Variables panel before the first deploy.
 
 ```env
 NODE_ENV=production
-PORT=<Hostinger-provided port, if shown in panel>
 MONGODB_URI=mongodb+srv://USER:PASSWORD@HOST/downloadanyvideo?retryWrites=true&w=majority
 MONGODB_DB_NAME=downloadanyvideo
+HASH_SECRET=<the 64-character value generated above>
 FRONTEND_URL=https://YOUR_DOMAIN
-VITE_API_URL=/api
+TRUST_PROXY=1
 RATE_LIMIT_MAX=60
+CONTACT_RATE_LIMIT_MAX=5
+VITE_API_URL=/api
 ```
 
-Important: production will not start with the local MongoDB URL. Create a MongoDB Atlas database and add its connection string as `MONGODB_URI`.
+Notes on the ones that are easy to get wrong:
 
-### Static frontend only
+- **`HASH_SECRET` is mandatory and must be at least 32 characters.** Without it
+  the process exits at boot on purpose: a missing secret would make the stored
+  IP hashes reversible, turning the analytics collection into personal data.
+- **`TRUST_PROXY=1`** because Hostinger terminates TLS in front of the app. Set
+  it to `0` only if the process is ever exposed directly, otherwise clients can
+  forge `X-Forwarded-For` and bypass rate limiting.
+- **`FRONTEND_URL`** must be the real public origin including `https://`. It is
+  the CORS allowlist; a mismatch blocks the browser's own API calls. Multiple
+  origins can be comma-separated.
+- **`PORT`** should be left unset unless hPanel assigns one — the app reads
+  `process.env.PORT` and falls back to 5000.
+- Analytics and ads are off by default. Set `ENABLE_ANALYTICS=true` or
+  `ENABLE_ADS=true` to widen the Content-Security-Policy to the Google domains;
+  without that the tags are blocked by CSP. For analytics also set
+  `VITE_GA_MEASUREMENT_ID` so the tag actually loads.
 
-Use this only if the backend is deployed somewhere else.
+### After deploying
 
-Hostinger settings:
+```bash
+curl -I https://YOUR_DOMAIN/                # 200, HTML
+curl https://YOUR_DOMAIN/api/health         # {"status":"healthy"}
+curl https://YOUR_DOMAIN/api/supported-sites
+```
+
+`/api/health` returns `{"status":"healthy"}` when the database is connected and
+`503` with `{"status":"degraded"}` when it is not. Detailed uptime and version
+fields are intentionally withheld in production.
+
+If the app fails to start, check the deployment log for either
+`HASH_SECRET must be set` or `MONGODB_URI must be set to a remote MongoDB
+connection string` — those two account for most first-deploy failures.
+
+### Alternative: static frontend only
+
+Use this only if the backend runs somewhere else.
 
 ```text
 Application root: frontend
-Build command: npm install && npm run build
+Build command:    npm install && npm run build
 Output directory: dist
 ```
 
-Set `VITE_API_URL` to the deployed backend API URL, for example:
-
-```env
-VITE_API_URL=https://api.yourdomain.com/api
-```
-
-The frontend alone cannot process `/api/download` requests unless a backend is also deployed.
+Set `VITE_API_URL` to the deployed backend API URL, for example
+`https://api.yourdomain.com/api`. The frontend alone cannot serve `/api`
+requests, so the downloader and contact form will not work without a backend.
 
 ## Google Cloud Run
 
@@ -92,9 +142,13 @@ Production backend requirements:
 ```env
 NODE_ENV=production
 MONGODB_URI=<stored in Secret Manager>
+HASH_SECRET=<stored in Secret Manager, 32+ characters>
 FRONTEND_URL=https://vidsavio.com
+TRUST_PROXY=1
 RATE_LIMIT_MAX=60
 ```
+
+`HASH_SECRET` is required — the container exits at boot without it.
 
 `FRONTEND_URL` can contain comma-separated origins if you need both a custom domain and a Cloud Run preview URL.
 
@@ -121,7 +175,10 @@ curl https://YOUR_BACKEND_URL/api/health
 curl https://YOUR_FRONTEND_URL
 ```
 
-The backend health response should return JSON with `status`, `database`, `timestamp`, `uptime`, and `version`.
+In production the health response is `{"status":"healthy"}`, or `503` with
+`{"status":"degraded"}` when the database is unreachable. The detailed
+`database`, `timestamp`, `uptime` and `version` fields are returned only outside
+production, to avoid handing out a free deployment fingerprint.
 
 ## Local Docker
 
