@@ -1,5 +1,91 @@
 # Deployment Guide
 
+## Railway (backend)
+
+Railway suits this backend: a persistent process, a real filesystem, and no
+execution time limit on a request. The committed `backend/Dockerfile` installs
+`yt-dlp` and `ffmpeg`, so the downloader works rather than reporting itself
+unconfigured.
+
+### Create the service
+
+In Railway: **New Project → Deploy from GitHub repo**, pick this repository,
+then open the service's **Settings**:
+
+```text
+Root Directory:  backend
+```
+
+That one setting matters. Railway builds from the repository root by default,
+where it would not find `backend/Dockerfile` and the `COPY` paths inside it
+would resolve against the wrong directory. With the root set, Railway picks up
+`backend/railway.json` and `backend/Dockerfile` automatically — builder,
+health check and restart policy are already declared there.
+
+### Database
+
+Either add a MongoDB service in the same Railway project and use the connection
+string it exposes, or point `MONGODB_URI` at MongoDB Atlas. Production refuses
+to start against a localhost URL.
+
+### Variables
+
+```env
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://USER:PASSWORD@HOST/downloadanyvideo?retryWrites=true&w=majority
+MONGODB_DB_NAME=downloadanyvideo
+HASH_SECRET=<32+ characters, see below>
+FRONTEND_URL=https://YOUR_VERCEL_DOMAIN
+TRUST_PROXY=1
+RATE_LIMIT_MAX=60
+DOWNLOAD_RATE_LIMIT_MAX=10
+YT_DLP_MAX_CONCURRENT=2
+```
+
+Leave `PORT` unset — Railway injects it and the app reads `process.env.PORT`.
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+`FRONTEND_URL` must be the Vercel origin including `https://`. It is the CORS
+allowlist, and a mismatch blocks the browser's own API calls.
+
+### Then point the frontend at it
+
+Railway gives the service a public domain under **Settings → Networking**. Set
+these in the Vercel project and redeploy the frontend:
+
+```env
+VITE_API_URL=https://YOUR_RAILWAY_DOMAIN/api
+VITE_DOWNLOAD_URL=https://YOUR_RAILWAY_DOMAIN/api
+```
+
+Because the frontend then calls a different origin, the CSP in `vercel.json`
+has to allow it: change `connect-src 'self'` to
+`connect-src 'self' https://YOUR_RAILWAY_DOMAIN`. Without that the browser
+blocks the request before it leaves the page, which looks like a backend
+outage and is not.
+
+### Confirm the engine is actually there
+
+```bash
+curl https://YOUR_RAILWAY_DOMAIN/api/health
+curl https://YOUR_RAILWAY_DOMAIN/api/supported-sites
+```
+
+The second response carries `downloader_available`. If it is `false` the
+service is running but `yt-dlp` is missing from the image — check the build
+log for the `apk add` step. If it is `true`, paste a real link into the site
+and the transfer will run.
+
+### Keep yt-dlp current
+
+Platforms change how they serve video, and yt-dlp ships frequent releases to
+keep up. A months-old image will start failing on extraction while everything
+else looks healthy. Redeploy periodically so the image picks up a newer
+package.
+
 ## Vercel (frontend) + a separate backend
 
 Vercel is an excellent home for the frontend and a poor one for the
