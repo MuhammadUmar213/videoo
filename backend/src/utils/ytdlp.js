@@ -35,6 +35,27 @@ const spawnEnv = () => {
   return { ...process.env, TMPDIR: tmpdir, TMP: tmpdir, TEMP: tmpdir };
 };
 
+/**
+ * Extra flags appended to every yt-dlp call, from YT_DLP_EXTRA_ARGS.
+ *
+ * Platforms block datacenter address ranges, and a server that works from a
+ * home connection can be refused from a host with "Sign in to confirm you're
+ * not a bot". What gets around it changes over time — a different player
+ * client, an exported cookie jar, a proxy — so it belongs in configuration
+ * rather than in a code change and a redeploy each time. Examples:
+ *
+ *   --extractor-args youtube:player_client=android,ios
+ *   --cookies /home/user/cookies.txt
+ *   --proxy http://user:pass@host:port
+ *
+ * Operator-supplied, not user-supplied: it is split on whitespace and passed
+ * through as-is, so quoted arguments containing spaces are not supported.
+ */
+const extraArgs = () => {
+  const raw = process.env.YT_DLP_EXTRA_ARGS;
+  return raw ? raw.trim().split(/\s+/).filter(Boolean) : [];
+};
+
 const QUALITY_BY_HEIGHT = [
   [2160, "4K"],
   [1440, "1440p"],
@@ -315,6 +336,7 @@ export const fetchMetadata = async (url) => {
       "--no-progress",
       "--socket-timeout",
       "15",
+      ...extraArgs(),
       "--",
       url,
     ],
@@ -373,6 +395,7 @@ export const createDownloadStream = async (url, formatId) => {
       "--no-progress",
       "--socket-timeout",
       "15",
+      ...extraArgs(),
       "--",
       url,
     ],
