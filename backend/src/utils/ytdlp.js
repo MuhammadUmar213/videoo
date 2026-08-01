@@ -13,6 +13,28 @@ const MAX_CONCURRENT = Number(process.env.YT_DLP_MAX_CONCURRENT || 2);
 // Anything else is refused before it can reach the argument list.
 const FORMAT_ID_PATTERN = /^[A-Za-z0-9_.+-]{1,64}$/;
 
+/**
+ * Environment for the spawned tool.
+ *
+ * The standalone build unpacks its bundled libraries into a temporary
+ * directory and loads them from there, so that directory has to allow
+ * execution. Shared hosts routinely mount /tmp noexec, which surfaces as
+ * "libz.so.1: failed to map segment from shared object" — a linker error that
+ * reads like a corrupt download rather than a permissions problem.
+ *
+ * Point YT_DLP_TMPDIR at a writable, executable path (somewhere under the
+ * account's home on such hosts) and it is passed down explicitly, rather than
+ * relying on the platform to forward a TMPDIR of its own.
+ */
+const spawnEnv = () => {
+  const tmpdir = process.env.YT_DLP_TMPDIR;
+  if (!tmpdir) {
+    return process.env;
+  }
+
+  return { ...process.env, TMPDIR: tmpdir, TMP: tmpdir, TEMP: tmpdir };
+};
+
 const QUALITY_BY_HEIGHT = [
   [2160, "4K"],
   [1440, "1440p"],
@@ -46,7 +68,11 @@ const run = (command, args, { timeoutMs, maxBuffer = 32 * 1024 * 1024 } = {}) =>
   new Promise((resolve, reject) => {
     let child;
     try {
-      child = spawn(command, args, { shell: false, windowsHide: true });
+      child = spawn(command, args, {
+        shell: false,
+        windowsHide: true,
+        env: spawnEnv(),
+      });
     } catch (error) {
       reject(new ToolUnavailableError(`Could not start ${command}`, { cause: error }));
       return;
@@ -350,7 +376,7 @@ export const createDownloadStream = async (url, formatId) => {
       "--",
       url,
     ],
-    { shell: false, windowsHide: true },
+    { shell: false, windowsHide: true, env: spawnEnv() },
   );
 
   const release = () => {
