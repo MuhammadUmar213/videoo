@@ -15,6 +15,7 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
+  "comment:engines": "Floor is set by Vite 7. Do not raise it to react-router 8's >=22.22.0 — hosts commonly ship 22.18.x, which that version refuses.",
   "keywords": [
     "video-downloader",
     "youtube",
