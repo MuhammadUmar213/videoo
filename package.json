@@ -15,6 +15,11 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
+  "comment:overrides": "react-router and zustand hoist to the root, where their react>=18 peer was satisfied by a second copy of React 18 while the app ran on React 19 in frontend/node_modules. Two copies means two dispatchers, and the app died on first render with 'Cannot read properties of null (reading useRef)'. Pin every resolution to one version.",
+  "overrides": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
   "comment:engines": "Floor is set by Vite 7. Do not raise it to react-router 8's >=22.22.0 — hosts commonly ship 22.18.x, which that version refuses.",
   "keywords": [
     "video-downloader",
