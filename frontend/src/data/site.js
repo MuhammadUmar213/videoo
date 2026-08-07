@@ -6,31 +6,31 @@ export const site = {
   authorLinkedIn: "https://www.linkedin.com/in/muhammad-umer-7b52b4228",
 };
 
-// TODO: replace the placeholder hrefs below with the real VidSavio profile
-// URLs before launch. They currently point at each platform's home page, which
-// is misleading to anyone who clicks them expecting an account.
+// Social profiles. An icon is rendered only once `href` is a real profile URL,
+// so an unfinished entry disappears rather than sending visitors to a platform
+// home page they did not ask for. Fill these in as the accounts are created.
 export const socialLinks = [
   {
     name: "Facebook",
-    href: "https://facebook.com",
+    href: null,
     color: "#1877F2",
     path: "M24 12.073C24 5.446 18.627.073 12 .073S0 5.446 0 12.073c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073Z",
   },
   {
     name: "X",
-    href: "https://twitter.com",
+    href: null,
     color: "#000000",
     path: "M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.831L0 1.154h7.594l5.243 6.932 6.064-6.933Zm-1.293 19.492h2.039L6.486 3.239H4.298l13.31 17.406Z",
   },
   {
     name: "Instagram",
-    href: "https://instagram.com",
+    href: null,
     color: "#E4405F",
     path: "M12 0C8.74 0 8.333.015 7.053.073 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.936 3.351.63 4.14C.333 4.905.131 5.775.073 7.053.014 8.333 0 8.74 0 12s.015 3.667.073 4.947c.059 1.277.26 2.148.557 2.913.306.788.717 1.459 1.384 2.126.667.666 1.337 1.079 2.126 1.384.765.297 1.636.499 2.913.557C8.333 23.986 8.74 24 12 24s3.667-.015 4.947-.073c1.277-.059 2.148-.26 2.913-.557.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.338 1.384-2.126.297-.765.499-1.636.557-2.913.059-1.28.073-1.687.073-4.947s-.015-3.667-.073-4.947c-.059-1.277-.26-2.148-.557-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.648.936 19.86.63c-.765-.297-1.636-.499-2.913-.557C15.667.014 15.26 0 12 0Zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324Zm0 10.162a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm7.846-10.405a1.441 1.441 0 1 1-2.882 0 1.441 1.441 0 0 1 2.882 0Z",
   },
   {
     name: "YouTube",
-    href: "https://youtube.com",
+    href: null,
     color: "#FF0000",
     path: "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814ZM9.545 15.568V8.432L15.818 12l-6.273 3.568Z",
   },

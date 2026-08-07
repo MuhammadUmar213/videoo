@@ -97,30 +97,34 @@ export default function Footer() {
               </p>
             </div>
 
+            {/* Entries without a real profile URL are left out rather than
+                pointed at a platform home page. */}
             <ul className="flex flex-wrap justify-center gap-3 md:justify-end">
-              {socialLinks.map((social) => (
-                <li key={social.name}>
-                  <a
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg motion-reduce:hover:translate-y-0"
-                    style={{ color: social.color }}
-                  >
-                    <svg
-                      className="h-5 w-5"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
+              {socialLinks
+                .filter((social) => Boolean(social.href))
+                .map((social) => (
+                  <li key={social.name}>
+                    <a
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg motion-reduce:hover:translate-y-0"
+                      style={{ color: social.color }}
                     >
-                      <path d={social.path} />
-                    </svg>
-                    <span className="sr-only">
-                      {social.name} (opens in a new tab)
-                    </span>
-                  </a>
-                </li>
-              ))}
+                      <svg
+                        className="h-5 w-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d={social.path} />
+                      </svg>
+                      <span className="sr-only">
+                        {social.name} (opens in a new tab)
+                      </span>
+                    </a>
+                  </li>
+                ))}
             </ul>
           </div>
         </div>
