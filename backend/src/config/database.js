@@ -34,17 +34,19 @@ export const connectDB = async () => {
 
     console.log(`MongoDB connected: ${getSafeMongoHost(MONGODB_URI)}`);
   } catch (error) {
+    // The database holds download analytics and contact messages. Every page,
+    // and the downloader itself, works without it. Exiting here used to take
+    // the whole site down over a storage dependency it does not need, and left
+    // a bare 503 with the reason visible only in the runtime log.
+    //
+    // Stay up, say so loudly, and let /api/health report the degradation —
+    // it already answers 503 while the connection is down, so uptime checks
+    // still see the problem.
     console.error("MongoDB connection error:", error.message);
-
-    // Production still fails fast: a misconfigured database must not serve
-    // traffic. Locally the API is usable without Mongo (only download
-    // analytics need it), so keep the dev server up instead of exiting.
-    if (isProduction) {
-      process.exit(1);
-    }
-
     console.warn(
-      "Continuing without a database connection. Download analytics will not be recorded.",
+      "Serving without a database. Pages and downloads work; download " +
+        "analytics and contact messages will not be stored until the " +
+        "connection recovers.",
     );
   }
 };
